@@ -31,7 +31,7 @@ public class ProductSearchTest {
 	}
 
 	@Test
-	public void testSearchProduct() throws Exception {
+	public void searchProduct() throws Exception {
 		String keyword = "Very Nice Shoes";
 		this.mockMvc
 				.perform(
@@ -40,6 +40,20 @@ public class ProductSearchTest {
 				.andExpect(status().isOk())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(jsonPath("$.name").value(keyword));
+	}
+
+	@Test
+	public void searchProductByNameNotFound() throws Exception {
+		String keyword = "Soft Shoes";
+		String infoText = String.format(
+				"Could not find any product matches '%s'", keyword);
+		this.mockMvc
+				.perform(
+						get("/product/search").param("q", keyword).accept(
+								MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(jsonPath("$.infoText").value(infoText));
 	}
 
 }
