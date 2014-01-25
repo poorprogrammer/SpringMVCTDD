@@ -1,6 +1,8 @@
 package com.sharesquare.springmvc;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -19,6 +21,12 @@ public class ProductSearchController {
 	final Logger logger = LoggerFactory
 			.getLogger(ProductSearchController.class);
 
+	final static List<String> products = new ArrayList<String>();
+	static {
+		products.add("{\"name\": \"Very Nice Shoes\", \"description\":\"Very nice shoes made in Thailand.\"}");
+		products.add("{\"name\": \"Cool Shoes\", \"description\":\"Cool shoes made in Japan.\"}");
+	}
+
 	@RequestMapping(value = "/product/search", method = RequestMethod.GET)
 	public void productSearch(HttpServletRequest request,
 			HttpServletResponse response) throws IOException {
@@ -29,12 +37,30 @@ public class ProductSearchController {
 		String infoText = String.format(
 				"Could not find any product matches '%s'", keyword);
 
-		response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-		if ("Very Nice Shoes".equals(keyword)) {
-			response.getWriter().write("{\"name\":\"Very Nice Shoes\"}");
-		} else {
-			response.getWriter().write("{\"infoText\":\"" + infoText + "\"}");
+		/* search the products */
+		List<String> matchedProducts = new ArrayList<String>();
+		for (String product : products) {
+			if (product.contains(keyword)) {
+				matchedProducts.add(product);
+			}
 		}
+
+		
+		response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+		/* generate the response */
+		StringBuffer jsonBuffer = new StringBuffer();
+		if (!matchedProducts.isEmpty()) {
+			jsonBuffer.append("{\"status\":\"found\", \"products\": [");
+			for (String product : matchedProducts) {
+				jsonBuffer.append(product + ",");
+			}
+			jsonBuffer.append("]}");
+		} else {
+			jsonBuffer.append("{\"status\":\"not found\", \"text\":\""
+					+ infoText + "\"}");
+		}
+
+		response.getWriter().write(jsonBuffer.toString());
 	}
 
 }

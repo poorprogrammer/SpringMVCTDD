@@ -38,8 +38,8 @@ public class ProductSearchTest {
 						get("/product/search").param("q", keyword).accept(
 								MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk())
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
-				.andExpect(jsonPath("$.name").value(keyword));
+				.andExpect(jsonPath("$.status").value("found"))
+			    .andExpect(jsonPath("$.products[0].name").value("Very Nice Shoes"));
 	}
 
 	@Test
@@ -52,8 +52,35 @@ public class ProductSearchTest {
 						get("/product/search").param("q", keyword).accept(
 								MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk())
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
-				.andExpect(jsonPath("$.infoText").value(infoText));
+				.andExpect(jsonPath("$.status").value("not found"))
+			    .andExpect(jsonPath("$.text").value(infoText));
+	}
+	
+	@Test
+	public void searchProductByNameShoesFoundTwo() throws Exception {
+	  String keyword = "Shoes";
+	  this.mockMvc.perform(get("/product/search")
+	    .param("q", keyword)
+	    .accept(MediaType.APPLICATION_JSON))
+	    .andExpect(status().isOk())
+	    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+	    .andExpect(jsonPath("$.status").value("found"))
+	    .andExpect(jsonPath("$.products[0].name").value("Very Nice Shoes"))
+	    .andExpect(jsonPath("$.products[1].name").value("Cool Shoes"));
+	}
+	
+	@Test
+	public void searchProductByNameCoolShoesFoundOne() throws Exception {
+	  String keyword = "Cool Shoes";
+
+	  this.mockMvc.perform(get("/product/search")
+	    .param("q", keyword)
+	    .accept(MediaType.APPLICATION_JSON))
+	    .andExpect(status().isOk())
+	    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+	    .andExpect(jsonPath("$.status").value("found"))
+	    .andExpect(jsonPath("$.products[1]").doesNotExist())
+	    .andExpect(jsonPath("$.products[0].name").value("Cool Shoes"));
 	}
 
 }
